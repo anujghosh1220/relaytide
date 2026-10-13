@@ -24,22 +24,26 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
 - Average first-response time calculation
 - Recent activity timeline
 - Prioritized list of tickets needing attention
+- Workload breakdown charts (status/priority distribution)
+- Ticket volume trends (14-day trailing window)
 
 ### Ticket Management
 - Create, view, edit, and delete tickets
-- Search tickets by title and description
+- Search tickets by title and description (real-time)
 - Filter by status (Open, In Progress, Resolved, Closed)
 - Filter by priority (Low, Medium, High, Critical)
 - Sort tickets by creation date
 - Assign tickets to team members
+- Bulk status updates
 
 ### Ticket Details
 - Complete ticket information display
-- Status and priority badges
+- Status and priority badges (color-coded)
 - Response-time tracking (first response and resolution time)
 - Activity history timeline
 - Quick actions: Record first response, Mark as resolved
 - Edit status and priority inline
+- Delete confirmation modal
 
 ### Response-Time Tracking
 - First-response time: Duration between ticket creation and first recorded response
@@ -52,6 +56,14 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
 - Records: Created, Assigned, Priority Changed, Status Changed, First Response, Resolved, Reopened
 - Timestamps and actor information
 - Contextual details for each action
+
+### UI/UX
+- Collapsible sidebar navigation (desktop) with mobile drawer
+- Command palette (⌘K / Ctrl+K) for quick ticket search
+- Dark/light theme support
+- Skeleton loading states
+- Responsive design (mobile-first)
+- Framer Motion animations
 
 ## 📄 Application Pages
 
@@ -66,6 +78,7 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
 - Link to registration page for new users
 - Automatic redirect to dashboard upon successful login
 - Responsive design for mobile and desktop
+- Password visibility toggle
 
 **Fields**:
 - Email: User's registered email address
@@ -91,6 +104,7 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
 - Error message display for registration failures
 - Link to login page for existing users
 - Responsive design
+- Password visibility toggle
 
 **Fields**:
 - Display Name: User's preferred display name (e.g., "John Doe")
@@ -125,10 +139,19 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
   - Shows ticket title, priority badge, and overdue indicator
   - Clickable cards navigate to ticket details
 
+- **Active Ticket Groups**:
+  - Groups tickets by status for quick overview
+  - Shows count per status group
+
 - **Recent Activity Section**:
   - Shows last 10 activities across all tickets
   - Displays activity type, ticket title, and relative time
   - Updates automatically when new activities are recorded
+
+- **Workload Breakdown**:
+  - Status distribution chart (pie)
+  - Priority distribution chart (pie)
+  - Visual representation of ticket workload
 
 **Metrics Calculation**:
 - All metrics calculated from actual ticket data in database
@@ -165,6 +188,10 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
   - Badges for status and priority
   - Overdue indicator (red badge) for past-due tickets
   - Clickable cards navigate to ticket details
+
+- **Bulk Actions**:
+  - Quick status update buttons for selected tickets
+  - Visual feedback on hover/click
 
 - **Create Ticket Button**:
   - Prominent button in page header
@@ -298,11 +325,15 @@ Without a central tracking system, issues can be forgotten, assigned ambiguously
 
 - **Frontend**: React 19, TypeScript, Vite
 - **Styling**: Tailwind CSS v4
-- **Routing**: React Router
+- **Routing**: React Router v7
 - **Backend/Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+- **Authentication**: Supabase Auth (email/password)
+- **Charts**: Recharts
+- **Animations**: Framer Motion
+- **UI Components**: Radix UI primitives
 - **Testing**: Vitest, React Testing Library
 - **Deployment**: Vercel (recommended)
+- **Linting**: Oxlint
 
 ## 📊 Database Schema
 
@@ -408,6 +439,15 @@ Append-only activity history.
    npm run build
    ```
 
+### Deploy to Vercel
+
+1. Push to GitHub
+2. Import project in Vercel
+3. Add environment variables:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+4. Deploy (vercel.json handles SPA routing automatically)
+
 ## 🧪 Testing
 
 ```bash
@@ -427,35 +467,59 @@ relaytide/
 ├── src/
 │   ├── components/
 │   │   ├── layout/
-│   │   │   ├── Sidebar.tsx          # Navigation sidebar with mobile collapse
-│   │   │   └── Header.tsx           # Page header with title and sign out
+│   │   │   ├── AppShell.tsx        # Main layout with sidebar, header, command palette
+│   │   │   ├── AppSidebar.tsx      # Collapsible sidebar with navigation
+│   │   │   ├── AppHeader.tsx       # Sticky header with title and search
+│   │   │   └── navigation.ts       # Navigation configuration
 │   │   ├── tickets/
 │   │   │   ├── TicketList.tsx      # Searchable, filterable ticket list
 │   │   │   ├── TicketForm.tsx      # Create/edit ticket form
-│   │   │   └── TicketDetails.tsx   # Ticket details with activity timeline
+│   │   │   ├── TicketDetails.tsx   # Ticket details with activity timeline
+│   │   │   └── TicketsTable.tsx    # Ticket cards with bulk actions
 │   │   ├── dashboard/
-│   │   │   ├── DashboardStats.tsx  # Statistics cards and avg response time
-│   │   │   └── RecentActivity.tsx  # Recent activity feed
-│   │   └── ui/
-│   │       ├── Button.tsx          # Reusable button component
-│   │       ├── Input.tsx           # Reusable input component
-│   │       ├── Select.tsx          # Reusable select component
-│   │       └── Badge.tsx           # Status and priority badges
+│   │   │   ├── StatCards.tsx       # Statistics cards and avg response time
+│   │   │   ├── RecentActivity.tsx  # Recent activity feed
+│   │   │   ├── NeedsAttention.tsx  # Overdue/high-priority tickets
+│   │   │   ├── ActiveTicketGroups.tsx # Ticket grouping by status
+│   │   │   ├── WorkloadBreakdown.tsx  # Status/priority charts
+│   │   │   ├── TicketVolumeChart.tsx  # 14-day volume chart
+│   │   │   └── DashboardStats.tsx    # Dashboard metrics component
+│   │   ├── ui/
+│   │   │   ├── Button.tsx          # Reusable button component
+│   │   │   ├── Input.tsx           # Reusable input component
+│   │   │   ├── Select.tsx          # Reusable select component
+│   │   │   ├── Badge.tsx           # Status and priority badges
+│   │   │   ├── Card.tsx            # Card layout component
+│   │   │   ├── Avatar.tsx          # User avatar component
+│   │   │   ├── Separator.tsx       # Visual separator
+│   │   │   ├── Tooltip.tsx         # Tooltip component
+│   │   │   ├── Progress.tsx        # Progress indicator
+│   │   │   ├── Skeleton.tsx        # Loading skeleton
+│   │   │   └── CommandPalette.tsx  # Command palette for search
+│   │   └── auth/
+│   │       └── AnimatedAuthBackground.tsx # Animated auth page background
 │   ├── pages/
 │   │   ├── Dashboard.tsx           # Main dashboard page
 │   │   ├── Tickets.tsx             # Ticket list page
 │   │   ├── CreateTicket.tsx        # Ticket creation page
 │   │   ├── TicketDetailsPage.tsx   # Ticket details page
 │   │   ├── Login.tsx               # Authentication page
-│   │   └── Register.tsx            # Registration page
+│   │   ├── Register.tsx            # Registration page
+│   │   └── MercuryLogin.tsx        # Alternative login (legacy)
 │   ├── lib/
 │   │   ├── supabase.ts             # Supabase client configuration
 │   │   ├── types.ts                # TypeScript type definitions
-│   │   ├── utils.ts                # Utility functions
-│   │   └── utils.test.ts           # Utility function tests
+│   │   ├── utils.ts                # Utility functions (time formatting, etc.)
+│   │   ├── utils.test.ts           # Utility function tests
+│   │   ├── metrics.ts              # Dashboard metrics calculations
+│   │   ├── theme.ts                # Theme constants (colors, labels)
+│   │   ├── activity.ts             # Activity formatting utilities
+│   │   └── ticketQuery.ts          # Ticket query helpers
 │   ├── hooks/
 │   │   ├── useAuth.ts              # Authentication hook
-│   │   └── useTickets.ts           # Ticket CRUD and dashboard hooks
+│   │   ├── useTickets.ts           # Ticket CRUD and dashboard hooks
+│   │   ├── useMediaQuery.tsx       # Media query hook
+│   │   └── useCommandShortcut.tsx  # Keyboard shortcut hook
 │   ├── test/
 │   │   └── setup.ts                # Test setup file
 │   ├── App.tsx                    # Main app component with routing
@@ -468,12 +532,16 @@ relaytide/
 ├── public/                        # Static assets
 ├── .env.example                   # Environment variable template
 ├── .gitignore                     # Git ignore rules
+├── vercel.json                    # Vercel SPA routing config
 ├── package.json                   # Project dependencies
 ├── tsconfig.json                  # TypeScript configuration
+├── tsconfig.app.json              # App TypeScript config
+├── tsconfig.node.json             # Node TypeScript config
 ├── vite.config.ts                 # Vite configuration
 ├── vitest.config.ts               # Vitest configuration
 ├── tailwind.config.js             # Tailwind CSS configuration
 ├── postcss.config.js              # PostCSS configuration
+├── .oxlintrc.json                 # Oxlint configuration
 ├── README.md                      # This file
 ├── SECURITY_AUDIT.md              # Security audit report
 └── VERIFICATION_SUMMARY.md       # Verification summary
@@ -488,6 +556,7 @@ relaytide/
 - **Input validation**: All forms validated before submission
 - **Timestamps**: Calculated server-side to prevent manipulation
 - **Profile creation**: Automatic trigger on user signup with fallback
+- **Authentication**: Email/password only (no OAuth providers)
 
 ## 🎨 Design System
 
