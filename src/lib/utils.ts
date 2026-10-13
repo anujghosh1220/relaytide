@@ -51,3 +51,7 @@ export function isOverdue(ticket: {
   
   return new Date() > new Date(ticket.response_due_at);
 }
+
+export function cn(...inputs: (string | undefined | null | false)[]): string {
+  return inputs.filter(Boolean).join(" ");
+}

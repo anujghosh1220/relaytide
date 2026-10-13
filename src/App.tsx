@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { MercuryLogin } from './pages/MercuryLogin';
 import { Dashboard } from './pages/Dashboard';
 import { Tickets } from './pages/Tickets';
 import { CreateTicket } from './pages/CreateTicket';
@@ -33,6 +34,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/login/mercury" element={<MercuryLogin />} />
         <Route path="/register" element={<Register />} />
         <Route
           path="/"

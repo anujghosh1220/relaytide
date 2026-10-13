@@ -1,31 +1,38 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
+type Size = 'sm' | 'md' | 'lg';
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: Variant;
+  size?: Size;
 }
 
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50';
+
+const variants: Record<Variant, string> = {
+  primary: 'bg-primary text-primary-foreground hover:bg-accent-hover',
+  secondary:
+    'border border-border-strong bg-surface-2 text-foreground hover:border-subtle-foreground hover:bg-elevated',
+  danger: 'bg-danger text-danger-foreground hover:bg-danger/90',
+  ghost: 'text-muted-foreground hover:bg-muted hover:text-foreground',
+  outline: 'border border-border bg-background hover:bg-accent hover:text-accent-foreground',
+};
+
+const sizes: Record<Size, string> = {
+  sm: 'h-8 px-3 text-xs',
+  md: 'h-10 px-4 text-sm',
+  lg: 'h-11 px-6 text-sm',
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = '', variant = 'primary', size = 'md', children, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-    
-    const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-      secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-      ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-    };
-    
-    const sizes = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base',
-    };
-    
+  ({ className = '', variant = 'primary', size = 'md', type = 'button', children, ...props }, ref) => {
     return (
       <button
         ref={ref}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+        type={type}
+        className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
         {children}
@@ -35,3 +42,5 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+export default Button;

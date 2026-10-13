@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Ticket, TicketActivity, TicketWithProfile, DashboardStats } from '../lib/types';
+import { computeStats } from '../lib/metrics';
 
 export function useTickets() {
   const [tickets, setTickets] = useState<TicketWithProfile[]>([]);
@@ -256,79 +257,51 @@ export function useTicketActivities(ticketId: string) {
     }
   }, [ticketId]);
 
-  return { activities, loading, fetchActivities };
+return { activities, loading, fetchActivities };
 }
 
-export function useDashboardStats() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalOpen: 0,
-    inProgress: 0,
-    resolved: 0,
-    overdue: 0,
-    avgFirstResponseTime: null,
-  });
-  const [loading, setLoading] = useState(true);
+export function useDashboardStats(tickets: TicketWithProfile[]): DashboardStats {
+  return useMemo(() => computeStats(tickets as Ticket[]), [tickets]);
+}
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data: tickets, error } = await supabase
-        .from('tickets')
-        .select('*');
-
-      if (error) throw error;
-
-      const ticketList = tickets || [];
-      const now = new Date();
-
-      const totalOpen = ticketList.filter(t => t.status === 'open').length;
-      const inProgress = ticketList.filter(t => t.status === 'in_progress').length;
-      const resolved = ticketList.filter(t => t.status === 'resolved').length;
-
-      const overdue = ticketList.filter(t => {
-        if (!t.response_due_at) return false;
-        if (t.first_response_at) return false;
-        if (t.status === 'resolved' || t.status === 'closed') return false;
-        return new Date(t.response_due_at) < now;
-      }).length;
-
-      const ticketsWithResponse = ticketList.filter(t => t.first_response_at !== null);
-      const avgFirstResponseTime = ticketsWithResponse.length > 0
-        ? ticketsWithResponse.reduce((sum, t) => {
-            const created = new Date(t.created_at).getTime();
-            const responded = new Date(t.first_response_at!).getTime();
-            return sum + (responded - created) / 60000;
-          }, 0) / ticketsWithResponse.length
-        : null;
-
-      setStats({
-        totalOpen,
-        inProgress,
-        resolved,
-        overdue,
-        avgFirstResponseTime: avgFirstResponseTime ? Math.round(avgFirstResponseTime) : null,
-      });
-    } catch (err) {
-      // Silently handle errors - might be RLS blocking access or no data
-      setStats({
-        totalOpen: 0,
-        inProgress: 0,
-        resolved: 0,
-        overdue: 0,
-        avgFirstResponseTime: null,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+export function useTicketSearch(active: boolean) {
+  const [tickets, setTickets] = useState<TicketWithProfile[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (!active) return;
+    let cancelled = false;
 
-  return { stats, loading, fetchStats };
+    const load = async () => {
+      try {
+        setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data, error } = await supabase
+          .from('tickets')
+          .select(`
+            *,
+            created_by_profile:profiles!tickets_created_by_fkey(id, display_name),
+            assigned_to_profile:profiles!tickets_assigned_to_fkey(id, display_name)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (error) throw error;
+        if (!cancelled) setTickets(data || []);
+      } catch {
+        if (!cancelled) setTickets([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [active]);
+
+  return { tickets, loading };
 }

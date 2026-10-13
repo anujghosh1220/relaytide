@@ -1,41 +1,45 @@
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
-import { Button } from '../components/ui/Button';
-import { TicketForm } from '../components/tickets/TicketForm';
-import { useTickets } from '../hooks/useTickets';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { TicketForm } from "../components/tickets/TicketForm";
+import { useTickets } from "../hooks/useTickets";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Button } from "../components/ui/Button";
+import { AppShell } from "../components/layout/AppShell";
+import { useAuth } from "../hooks/useAuth";
 
 export const CreateTicket = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const { createTicket } = useTickets();
 
   const handleSubmit = async (ticket: any) => {
     await createTicket(ticket);
-    navigate('/tickets');
+    navigate("/tickets");
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 ml-0 lg:ml-64 overflow-auto">
-        <Header title="Create Ticket" />
-        <main className="p-4 lg:p-6">
-          <div className="mb-6">
-            <Link to="/tickets">
-              <Button variant="ghost" size="sm">← Back to Tickets</Button>
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <TicketForm
-              onSubmit={handleSubmit}
-              onCancel={() => navigate('/tickets')}
-              submitLabel="Create Ticket"
-            />
-          </div>
-        </main>
+    <AppShell
+      title="Create Ticket"
+      description="Submit a new incident ticket"
+      user={user}
+      onSignOut={signOut}
+    >
+      <div className="mb-6">
+        <Link to="/tickets">
+          <Button variant="ghost" size="sm">← Back to Tickets</Button>
+        </Link>
       </div>
-    </div>
+
+      <div className="max-w-3xl">
+        <div className="bg-surface rounded-lg border border-border p-6">
+          <TicketForm
+            onSubmit={handleSubmit}
+            onCancel={() => navigate("/tickets")}
+            submitLabel="Create Ticket"
+          />
+        </div>
+      </div>
+    </AppShell>
   );
 };
+
+export default CreateTicket;
