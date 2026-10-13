@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/Card";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { AnimatedAuthBackground } from "@/components/auth/AnimatedAuthBackground";
 
 export const Login = () => {
@@ -43,13 +43,6 @@ export const Login = () => {
         <span className="text-xs tracking-[0.14em] uppercase text-muted-foreground">
           RelayTide
         </span>
-        <Button
-          variant="ghost"
-          className="h-9 rounded-lg border-border bg-surface text-foreground hover:bg-muted"
-        >
-          <span className="mr-2">Contact</span>
-          <ArrowRight className="h-4 w-4" />
-        </Button>
       </header>
 
       {/* Centered Login Card */}
@@ -136,34 +129,6 @@ export const Login = () => {
               {loading ? "Signing in..." : "Sign in"}
             </Button>
 
-            <div className="relative">
-              <hr className="border-border" />
-              <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-surface/70 px-2 text-[11px] uppercase tracking-widest text-muted-foreground">
-                or
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="h-10 rounded-lg border-border bg-surface text-foreground hover:bg-muted"
-              >
-                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-                </svg>
-                GitHub
-              </Button>
-              <Button
-                variant="outline"
-                className="h-10 rounded-lg border-border bg-surface text-foreground hover:bg-muted"
-              >
-                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="12" rx="2" />
-                  <path d="M9 20h6m-3-4v4" />
-                </svg>
-                Google
-              </Button>
-            </div>
             </form>
           </CardContent>
 

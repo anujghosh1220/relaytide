@@ -64,7 +64,7 @@ const rowVariants: Variants = {
     transition: {
       type: "spring",
       stiffness: 400,
-      damping: 25,
+      damping: 30,
       mass: 0.7,
     },
   },
@@ -440,8 +440,7 @@ export const TicketsTable = ({ tickets, loading, onCreateTicket }: TicketTablePr
                             transition={{ 
                               type: "spring", 
                               stiffness: 500, 
-                              damping: 25,
-                              duration: 0.1
+                              damping: 30,
                             }}
                             onClick={() => handleBulkStatusUpdate("in_progress")}
                             className="flex items-center gap-2 px-2 py-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-lg text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
