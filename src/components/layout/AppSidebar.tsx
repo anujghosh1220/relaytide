@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Waves, X } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { Separator } from "../ui/Separator";
+import { Logo } from "../ui/Logo";
 import { navigation } from "./navigation";
 
 interface AppSidebarProps {
@@ -88,14 +89,9 @@ export const AppSidebar = ({
 
   const brand = (compact: boolean) => (
     <div className="flex h-16 items-center gap-2.5 border-b border-border px-4">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-        <Waves className="size-5" aria-hidden="true" />
-      </span>
+      <Logo className="h-8" />
       {!compact && (
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-foreground">
-            RelayTide
-          </span>
           <span className="block truncate text-[11px] text-subtle-foreground">
             Incident response
           </span>
@@ -163,10 +159,7 @@ export const AppSidebar = ({
           >
             <div className="flex h-16 items-center justify-between border-b border-border px-4">
               <span className="flex items-center gap-2.5">
-                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-                  <Waves className="size-5" aria-hidden="true" />
-                </span>
-                <span className="text-sm font-semibold text-foreground">RelayTide</span>
+                <Logo className="h-8" />
               </span>
               <Button variant="ghost" size="sm" onClick={onCloseMobile} aria-label="Close navigation">
                 <X className="size-4" />

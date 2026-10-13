@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/Card";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { AnimatedAuthBackground } from "@/components/auth/AnimatedAuthBackground";
+import { Logo } from "@/components/ui/Logo";
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -53,9 +54,7 @@ export const Register = () => {
 
       {/* Header */}
       <header className="absolute left-0 right-0 top-0 flex items-center justify-between px-6 py-4 border-b border-border/50">
-        <span className="text-xs tracking-[0.14em] uppercase text-muted-foreground">
-          RelayTide
-        </span>
+        <Logo className="h-8" />
         <Link to="/login">
           <button className="h-9 rounded-lg border border-border bg-surface text-foreground px-4 text-sm font-medium hover:bg-muted transition-colors">
             Sign in
