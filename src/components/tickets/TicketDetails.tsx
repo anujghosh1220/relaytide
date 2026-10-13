@@ -2,7 +2,8 @@ import { useState } from 'react';
 import type { TicketWithProfile } from '../../lib/types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { formatDateTime, formatDuration, calculateResponseTime } from '../../lib/utils';
+import { CopyIcon } from 'lucide-react';
+import { formatDateTime, formatDuration, calculateResponseTime, calculateSLAStatus, getHumanReadableTicketId, calculateHealthScore } from '../../lib/utils';
 import { useTicketActivities } from '../../hooks/useTickets';
 
 interface TicketDetailsProps {
@@ -52,26 +53,51 @@ export const TicketDetails = ({ ticket, onUpdate, onDelete, onRecordFirstRespons
     return labels[actionType] || actionType;
   };
 
-  const firstResponseTime = ticket.first_response_at 
-    ? calculateResponseTime(ticket.created_at, ticket.first_response_at)
-    : null;
+const firstResponseTime = ticket.first_response_at 
+  ? calculateResponseTime(ticket.created_at, ticket.first_response_at)
+  : null;
 
-  const resolutionTime = ticket.resolved_at
-    ? calculateResponseTime(ticket.created_at, ticket.resolved_at)
-    : null;
+const resolutionTime = ticket.resolved_at
+  ? calculateResponseTime(ticket.created_at, ticket.resolved_at)
+  : null;
+
+const slaStatus = calculateSLAStatus(ticket);
+const healthScore = calculateHealthScore(ticket);
 
   return (
     <div className="space-y-6">
       {/* Ticket Header */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex-1">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">{ticket.title}</h1>
-            <div className="flex items-center gap-3">
-              <Badge type="status" value={ticket.status} />
-              <Badge type="priority" value={ticket.priority} />
-            </div>
-          </div>
+<div className="flex items-start justify-between gap-4 mb-4">
+           <div className="flex-1">
+             <div className="flex items-center gap-3 mb-2">
+               <h1 className="text-2xl font-semibold text-gray-900">{ticket.title}</h1>
+<div className="flex items-center gap-2">
+                   <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
+                     Ticket #{getHumanReadableTicketId(ticket.id)}
+                   </div>
+                   <button
+                     onClick={async () => {
+                       await navigator.clipboard.writeText(getHumanReadableTicketId(ticket.id));
+                       // Show temporary feedback
+                       const originalTitle = document.title;
+                       document.title = 'Copied!';
+                       setTimeout(() => {
+                         document.title = originalTitle;
+                       }, 1500);
+                     }}
+                     className="text-blue-600 hover:text-blue-800 text-xs"
+                     title="Copy ticket ID"
+                   >
+                     <CopyIcon className="h-4 w-4" />
+                   </button>
+               </div>
+             </div>
+             <div className="flex items-center gap-3">
+               <Badge type="status" value={ticket.status} />
+               <Badge type="priority" value={ticket.priority} />
+             </div>
+           </div>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => setIsEditing(!isEditing)}>
               {isEditing ? 'Cancel' : 'Edit'}
@@ -119,12 +145,26 @@ export const TicketDetails = ({ ticket, onUpdate, onDelete, onRecordFirstRespons
             <span className="text-gray-500">Last updated:</span>{' '}
             <span className="font-medium">{formatDateTime(ticket.updated_at)}</span>
           </div>
-          {ticket.response_due_at && (
-            <div>
-              <span className="text-gray-500">Response due:</span>{' '}
-              <span className="font-medium">{formatDateTime(ticket.response_due_at)}</span>
-            </div>
-          )}
+           {ticket.response_due_at && (
+             <div>
+               <span className="text-gray-500">Response due:</span>{' '}
+               <span className="font-medium">{formatDateTime(ticket.response_due_at)}</span>
+             </div>
+           )}
+           <div>
+             <span className="text-gray-500">SLA Status:</span>{' '}
+             <span className={`font-medium px-2 py-1 rounded-full text-xs ${
+               slaStatus.status === 'plenty' 
+                 ? 'bg-blue-100 text-blue-800'
+                 : slaStatus.status === 'approaching'
+                   ? 'bg-amber-100 text-amber-800'
+                   : slaStatus.status === 'overdue'
+                     ? 'bg-red-100 text-red-800'
+                     : 'bg-green-100 text-green-800'
+             }`}>
+               {slaStatus.formattedTime}
+             </span>
+           </div>
           {firstResponseTime && (
             <div>
               <span className="text-gray-500">First response time:</span>{' '}
@@ -169,6 +209,12 @@ export const TicketDetails = ({ ticket, onUpdate, onDelete, onRecordFirstRespons
                   <option value="critical">Critical</option>
                 </select>
               </div>
+            </div>
+            <div>
+              <span className="text-gray-500">Health Score:</span>{' '}
+              <span className={`font-medium px-2 py-1 rounded-full text-xs ${healthScore.color}`}>
+                {healthScore.label} ({healthScore.score}/100)
+              </span>
             </div>
           </div>
         )}

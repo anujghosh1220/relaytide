@@ -2,16 +2,26 @@
 import { supabase } from '../lib/supabase';
 import type { Ticket, TicketActivity, TicketWithProfile, DashboardStats } from '../lib/types';
 import { computeStats } from '../lib/metrics';
+import { demoTickets, demoActivities } from '../lib/demoData';
+import { isDemoMode } from '../lib/utils';
 
 export function useTickets() {
-  const [tickets, setTickets] = useState<TicketWithProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+   const [tickets, setTickets] = useState<TicketWithProfile[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
 
   const fetchTickets = async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Check if demo mode is enabled
+      if (isDemoMode()) {
+        // Return demo tickets
+        setTickets(demoTickets);
+        setLoading(false);
+        return;
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -37,6 +47,28 @@ export function useTickets() {
 
   const createTicket = async (ticket: Omit<Ticket, 'id' | 'created_at' | 'updated_at' | 'first_response_at' | 'resolved_at'>) => {
     try {
+      if (isDemoMode()) {
+        // Simulate creating a ticket in demo mode
+         const newTicket: TicketWithProfile = {
+           ...ticket,
+           id: `demo-${Date.now()}`,
+           created_at: new Date().toISOString(),
+           updated_at: new Date().toISOString(),
+           first_response_at: null,
+           resolved_at: null,
+           created_by: "demo-user-1", // Simulate current user
+           created_by_profile: {
+             id: "demo-user-1",
+             display_name: "Demo User",
+             created_at: new Date().toISOString()
+           }
+         };
+        
+        // Add to the beginning of the list
+        setTickets(prev => [newTicket, ...prev]);
+        return newTicket;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -92,6 +124,24 @@ export function useTickets() {
 
   const updateTicket = async (id: string, updates: Partial<Ticket>) => {
     try {
+      if (isDemoMode()) {
+        // Simulate updating a ticket in demo mode
+        setTickets(prev => prev.map(ticket => 
+          ticket.id === id 
+            ? { 
+                ...ticket, 
+                ...updates,
+                updated_at: new Date().toISOString()
+              }
+            : ticket
+        ));
+        
+        // Simulate recording activity
+        // In a real app, we would add to ticket_activities, but for demo we'll skip
+        
+        return { ...tickets.find(t => t.id === id)!, ...updates, updated_at: new Date().toISOString() } as TicketWithProfile;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -143,6 +193,12 @@ export function useTickets() {
 
   const deleteTicket = async (id: string) => {
     try {
+      if (isDemoMode()) {
+        // Simulate deleting a ticket in demo mode
+        setTickets(prev => prev.filter(ticket => ticket.id !== id));
+        return;
+      }
+
       const { error } = await supabase
         .from('tickets')
         .delete()
@@ -158,6 +214,21 @@ export function useTickets() {
 
   const recordFirstResponse = async (ticketId: string) => {
     try {
+      if (isDemoMode()) {
+        // Simulate recording first response in demo mode
+        setTickets(prev => prev.map(ticket => 
+          ticket.id === ticketId 
+            ? { 
+                ...ticket, 
+                first_response_at: new Date().toISOString()
+              }
+            : ticket
+        ));
+        
+        // Simulate recording activity
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -183,6 +254,22 @@ export function useTickets() {
 
   const resolveTicket = async (ticketId: string) => {
     try {
+      if (isDemoMode()) {
+        // Simulate resolving a ticket in demo mode
+        setTickets(prev => prev.map(ticket => 
+          ticket.id === ticketId 
+            ? { 
+                ...ticket, 
+                status: 'resolved',
+                resolved_at: new Date().toISOString()
+              }
+            : ticket
+        ));
+        
+        // Simulate recording activity
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -234,6 +321,14 @@ export function useTicketActivities(ticketId: string) {
     try {
       setLoading(true);
 
+      // Check if demo mode is enabled
+      if (isDemoMode()) {
+        // Return demo activities for this ticket
+        setActivities(demoActivities[ticketId] || []);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('ticket_activities')
         .select('*')
@@ -257,7 +352,7 @@ export function useTicketActivities(ticketId: string) {
     }
   }, [ticketId]);
 
-return { activities, loading, fetchActivities };
+  return { activities, loading, fetchActivities };
 }
 
 export function useDashboardStats(tickets: TicketWithProfile[]): DashboardStats {

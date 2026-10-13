@@ -1,6 +1,7 @@
 import { PanelLeft, Search } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useIsApplePlatform } from "../../hooks/useMediaQuery";
+import { useState, useEffect } from 'react';
 
 interface AppHeaderProps {
   title: string;
@@ -19,6 +20,39 @@ export const AppHeader = ({
   compactNavigation,
 }: AppHeaderProps) => {
   const isApple = useIsApplePlatform();
+  const [demoMode, setDemoMode] = useState(false);
+
+  useEffect(() => {
+    // Check if demo mode is enabled on mount
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isDemoInUrl = urlParams.get('demo') === 'true';
+      const isDemoInStorage = localStorage.getItem('relaytide.demoMode') === 'true';
+      setDemoMode(isDemoInUrl || isDemoInStorage);
+    }
+  }, []);
+
+  const toggleDemoMode = () => {
+    const newMode = !demoMode;
+    setDemoMode(newMode);
+    if (newMode) {
+      localStorage.setItem('relaytide.demoMode', 'true');
+      // Update URL without reloading
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('demo', 'true');
+      const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+    } else {
+      localStorage.removeItem('relaytide.demoMode');
+      // Update URL without reloading
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.delete('demo');
+      const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+    // Reload the app to apply demo mode
+    window.location.reload();
+  };
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-6">
@@ -70,6 +104,31 @@ export const AppHeader = ({
         className="shrink-0 px-2 md:hidden"
       >
         <Search className="size-4.5" />
+      </Button>
+
+      {/* Demo Mode Toggle */}
+      <Button
+        variant={demoMode ? "outline" : "secondary"}
+        size="sm"
+        onClick={toggleDemoMode}
+        className="shrink-0 px-2 ml-2"
+        title={demoMode ? "Disable Demo Mode" : "Enable Demo Mode"}
+      >
+        {demoMode ? (
+          <>
+            <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 16 14.62 18.18 21.01 12 17.77 5.82 21.01 8 14.62 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span className="ml-1">Demo: ON</span>
+          </>
+        ) : (
+          <>
+            <svg className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 16 14.62 18.18 21.01 12 17.77 5.82 21.01 8 14.62 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span className="ml-1">Demo: OFF</span>
+          </>
+        )}
       </Button>
     </header>
   );

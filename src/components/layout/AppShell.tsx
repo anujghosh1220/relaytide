@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import { AppHeader } from './AppHeader';
 import { AppSidebar } from './AppSidebar';
 import { CommandPalette } from '../ui/CommandPalette';
+import { Button } from '../ui/Button';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useCommandShortcut } from '../../hooks/useCommandShortcut';
 import { useTicketSearch } from '../../hooks/useTickets';
@@ -34,6 +35,7 @@ export const AppShell = ({ title, description, user, onSignOut, children }: AppS
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
     window.localStorage?.setItem(COLLAPSE_STORAGE_KEY, String(collapsed));
@@ -60,7 +62,11 @@ export const AppShell = ({ title, description, user, onSignOut, children }: AppS
   const togglePalette = useCallback(() => setPaletteOpen((value) => !value), []);
   const closePalette = useCallback(() => setPaletteOpen(false), []);
 
+  const toggleHelp = useCallback(() => setHelpOpen((value) => !value), []);
+  const closeHelp = useCallback(() => setHelpOpen(false), []);
+
   useCommandShortcut('k', togglePalette);
+  useCommandShortcut('?', toggleHelp);
 
   const { tickets } = useTicketSearch(paletteOpen);
 
@@ -87,12 +93,72 @@ export const AppShell = ({ title, description, user, onSignOut, children }: AppS
           compactNavigation={collapsed}
         />
 
-        <main className="flex flex-1 flex-col gap-6 p-4 sm:p-6">{children}</main>
-      </div>
+<main className="flex flex-1 flex-col gap-6 p-4 sm:p-6">{children}</main>
+       </div>
 
-      <CommandPalette open={paletteOpen} onClose={closePalette} tickets={tickets} />
-    </div>
-  );
-};
+       <CommandPalette open={paletteOpen} onClose={closePalette} tickets={tickets} />
+
+       {/* Keyboard Shortcuts Help Panel */}
+       {helpOpen && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+           <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4">
+             <h2 className="text-xl font-semibold text-gray-900 mb-6">Keyboard Shortcuts</h2>
+             <div className="space-y-4">
+               <div className="flex items-start gap-4">
+                 <div className="flex-shrink-0">
+                   <div className="w-8 h-8 flex items-center justify-center rounded-md bg-blue-500 text-white text-sm">
+                     ?
+                   </div>
+                 </div>
+                 <div>
+                   <h3 className="font-medium text-gray-900">Toggle Help Panel</h3>
+                   <p className="text-sm text-gray-600">Show/hide this help panel</p>
+                 </div>
+               </div>
+               <div className="flex items-start gap-4">
+                 <div className="flex-shrink-0">
+                   <div className="w-8 h-8 flex items-center justify-center rounded-md bg-blue-500 text-white text-sm">
+                     ⌘K
+                   </div>
+                 </div>
+                 <div>
+                   <h3 className="font-medium text-gray-900">Open Command Palette</h3>
+                   <p className="text-sm text-gray-600">Search tickets quickly</p>
+                 </div>
+               </div>
+               <div className="flex items-start gap-4">
+                 <div className="flex-shrink-0">
+                   <div className="w-8 h-8 flex items-center justify-center rounded-md bg-blue-500 text-white text-sm">
+                     Esc
+                   </div>
+                 </div>
+                 <div>
+                   <h3 className="font-medium text-gray-900">Close Open Panels</h3>
+                   <p className="text-sm text-gray-600">Close command palette, help panel, or modals</p>
+                 </div>
+               </div>
+               <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-blue-500 text-white text-sm">
+                      ?
+                    </div>
+                  </div>
+                 <div>
+                   <h3 className="font-medium text-gray-900">Toggle Help Panel</h3>
+                   <p className="text-sm text-gray-600">Show/hide this help panel (alternative)</p>
+                 </div>
+               </div>
+             </div>
+             <div className="mt-6 flex justify-end">
+               <Button variant="secondary" onClick={closeHelp}>
+                 Got it
+               </Button>
+             </div>
+           </div>
+         </div>
+       )}
+     </div>
+   );
+ };
 
 export default AppShell;
